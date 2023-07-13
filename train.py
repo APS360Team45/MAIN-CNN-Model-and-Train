@@ -167,7 +167,7 @@ for image, label in train_dataset:
   features = alexnet.features(image)
   train_data.append([features, label])
 
-torch.save(train_data, "alex_weigths_train")
+torch.save(train_data, "alex_features_train")
 
 val_data = []
 
@@ -181,10 +181,10 @@ for image, label in val_dataset:
   features = alexnet.features(image)
   val_data.append([features, label])
 
-torch.save(val_data, "alex_weigths_val")
+torch.save(val_data, "alex_features_val")
 
-alex_data_train = torch.load("alex_weigths_train")
-alex_data_val = torch.load("alex_weigths_val")
+alex_data_train = torch.load("alex_features_train")
+alex_data_val = torch.load("alex_features_val")
 
 
 class Al_Net(nn.Module):
