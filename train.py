@@ -8,8 +8,9 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from torch.utils.data import TensorDataset
 import cv2
-
 import torchvision.models
+
+from plot import plot
 
 #alexnet = torchvision.models.alexnet(pretrained=True)
 
@@ -154,18 +155,28 @@ train_dataset = torch.load('train_dataset.pth')
 val_dataset = torch.load('val_dataset.pth')
 test_dataset = torch.load('test_dataset.pth')
 
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=64, shuffle=True)
 
-train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30)
 
-#paramys = towrch.load("model_ripeness_detector_bs64_lr0.001_epoch30")
-#test_model_0.load_state_dict(paramys)
 
-test_accuracy, test_loss = evaluate(test_model_0, test_dataset, nn.MSELoss())
+#train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30)
 
-print(f"Test Accuracy (Epoch 30): {test_accuracy}")
+paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch30")
+test_model_0.load_state_dict(paramys)
 
-train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30, current_epoch=30)
+#test_loss, test_accuracy = evaluate(test_model_0, test_loader, nn.MSELoss())
+#print(f"Test Accuracy (Epoch 30): {test_accuracy*100}%")
 
-test_accuracy, test_loss = evaluate(test_model_0, test_dataset, nn.MSELoss())
 
-print(f"Test Accuracy (Epoch 60): {test_accuracy}")
+
+#train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30, current_epoch=30)
+
+paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch60")
+test_model_0.load_state_dict(paramys)
+
+#test_loss, test_accuracy = evaluate(test_model_0, test_loader, nn.MSELoss())
+#print(f"Test Accuracy (Epoch 60): {test_accuracy*100}%")
+
+
+# Plot graphs
+plot("model_ripeness_detector_bs64_lr0.001_epoch30", "model_ripeness_detector_bs64_lr0.001_epoch60")
