@@ -5,14 +5,9 @@ import time
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import matplotlib.pyplot as plt
-from torch.utils.data import TensorDataset
-import cv2
-import torchvision.models
 
 from plot import plot
 
-#alexnet = torchvision.models.alexnet(pretrained=True)
 
 class FruitRipenessDetector(nn.Module):
     def __init__(self):
@@ -41,6 +36,7 @@ class FruitRipenessDetector(nn.Module):
         x = x.squeeze(1) # Flatten to [batch_size]
         return x
     
+
 def get_model_name(name, batch_size, learning_rate, epoch):
     """ Generate a name for the model consisting of all the hyperparameter values
 e
@@ -80,6 +76,7 @@ def evaluate(net, loader, criterion): # this function is for evaluating a model 
     accuracy = float(total_accuracy)/total_iter # obtain accuracy by dividing total number of correct predictions by total number of predictions
     loss = float(total_loss) / (i + 1) # obtain loss by dividing total CE loss per batch by number of iterations
     return loss, accuracy
+
 
 def train(model, train_dataset, val_dataset, batch_size=64, lr=0.001, num_epochs=10, print_stat=False, use_cuda=False, current_epoch=0):
     torch.manual_seed(1000)
@@ -159,23 +156,23 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=64, shuffle=T
 
 
 
-#train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30)
+train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30)
 
-paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch30")
-test_model_0.load_state_dict(paramys)
+# paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch30")
+# test_model_0.load_state_dict(paramys)
 
-#test_loss, test_accuracy = evaluate(test_model_0, test_loader, nn.MSELoss())
-#print(f"Test Accuracy (Epoch 30): {test_accuracy*100}%")
+test_loss, test_accuracy = evaluate(test_model_0, test_loader, nn.MSELoss())
+print(f"Test Accuracy (Epoch 30): {test_accuracy*100}%")
 
 
 
-#train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30, current_epoch=30)
+train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30, current_epoch=30)
 
-paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch60")
-test_model_0.load_state_dict(paramys)
+# paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch60")
+# test_model_0.load_state_dict(paramys)
 
-#test_loss, test_accuracy = evaluate(test_model_0, test_loader, nn.MSELoss())
-#print(f"Test Accuracy (Epoch 60): {test_accuracy*100}%")
+test_loss, test_accuracy = evaluate(test_model_0, test_loader, nn.MSELoss())
+print(f"Test Accuracy (Epoch 60): {test_accuracy*100}%")
 
 
 # Plot graphs
