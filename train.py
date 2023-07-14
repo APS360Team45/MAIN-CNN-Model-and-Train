@@ -166,6 +166,7 @@ print(f"Test Accuracy (Epoch 30): {test_accuracy*100}%")
 
 
 
+
 train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30, current_epoch=30)
 
 # paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch60")
@@ -175,5 +176,22 @@ test_loss, test_accuracy = evaluate(test_model_0, test_loader, nn.MSELoss())
 print(f"Test Accuracy (Epoch 60): {test_accuracy*100}%")
 
 
+
 # Plot graphs
 plot("model_ripeness_detector_bs64_lr0.001_epoch30", "model_ripeness_detector_bs64_lr0.001_epoch60")
+
+
+
+########## Optional Fruit Specific Testing ##########
+Banana_loader = torch.utils.data.DataLoader(torch.load('test_dataset_Banana.pth'), batch_size=64, shuffle=True)
+Mango_loader = torch.utils.data.DataLoader(torch.load('test_dataset_Mango.pth'), batch_size=64, shuffle=True)
+Tomato_loader = torch.utils.data.DataLoader(torch.load('test_dataset_Tomato.pth'), batch_size=64, shuffle=True)
+
+Banana_loss, Banana_accuracy = evaluate(test_model_0, Banana_loader, nn.MSELoss())
+Mango_loss, Mango_accuracy = evaluate(test_model_0, Mango_loader, nn.MSELoss())
+Tomato_loss, Tomato_accuracy = evaluate(test_model_0, Tomato_loader, nn.MSELoss())
+
+print(f"Banana Accuracy (Epoch 60): {Banana_accuracy*100}%")
+print(f"Mango Accuracy (Epoch 60): {Mango_accuracy*100}%")
+print(f"Tomato Accuracy (Epoch 60): {Tomato_accuracy*100}%")
+
