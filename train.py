@@ -11,7 +11,7 @@ import cv2
 
 import torchvision.models
 
-alexnet = torchvision.models.alexnet(pretrained=True)
+#alexnet = torchvision.models.alexnet(pretrained=True)
 
 class FruitRipenessDetector(nn.Module):
     def __init__(self):
@@ -80,7 +80,7 @@ def evaluate(net, loader, criterion): # this function is for evaluating a model 
     loss = float(total_loss) / (i + 1) # obtain loss by dividing total CE loss per batch by number of iterations
     return loss, accuracy
 
-def train(model, train_dataset, val_dataset, batch_size=64, lr=0.001, num_epochs=10, print_stat=False, use_cuda=False):
+def train(model, train_dataset, val_dataset, batch_size=64, lr=0.001, num_epochs=10, print_stat=False, use_cuda=False, current_epoch=0):
     torch.manual_seed(1000)
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -96,9 +96,9 @@ def train(model, train_dataset, val_dataset, batch_size=64, lr=0.001, num_epochs
     start_time = time.time()
 
     # training
-    n = 0 # the number of iterations
+    n = 0 + current_epoch # the number of iterations
     for epoch in range(num_epochs):
-
+        n = n + 1
         running_loss = 0.0
         total_accuracy = 0.0
         total_iter = 0.0
@@ -128,7 +128,7 @@ def train(model, train_dataset, val_dataset, batch_size=64, lr=0.001, num_epochs
         train_accuracy[epoch] = float(total_accuracy) / total_iter
         val_loss[epoch], val_accuracy[epoch] = evaluate(model, val_loader, criterion)
 
-        print((f"Epoch {epoch + 1}: Train accuracy: {train_accuracy[epoch] * 100:.1f}%, Train loss: {train_loss[epoch]:.4f} | "+
+        print((f"Epoch {epoch + 1 + current_epoch}: Train accuracy: {train_accuracy[epoch] * 100:.1f}%, Train loss: {train_loss[epoch]:.4f} | "+
           f"Validation accuracy: {val_accuracy[epoch] * 100:.1f}%, Validation loss: {val_loss[epoch]:.4f}"))
 
         model_path = get_model_name(model.name, batch_size, lr, n)
@@ -155,66 +155,17 @@ val_dataset = torch.load('val_dataset.pth')
 test_dataset = torch.load('test_dataset.pth')
 
 
-train_data = []
+train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30)
 
-for image, label in train_dataset:
-  # normalize pixel intensity values back to [0, 1]
-  image = image / 2 + 0.5
-  #convert from hsv to rgb
-  image = cv2.cvtColor(image.numpy().transpose(1,2,0), cv2.COLOR_HSV2RGB)
-  image = cv2.resize(image, (224, 224))
-  image = torch.from_numpy(image.transpose(2,0,1))
-  features = alexnet.features(image)
-  train_data.append([features, label])
+#paramys = towrch.load("model_ripeness_detector_bs64_lr0.001_epoch30")
+#test_model_0.load_state_dict(paramys)
 
-torch.save(train_data, "alex_features_train")
+test_accuracy, test_loss = evaluate(test_model_0, test_dataset, nn.MSELoss())
 
-val_data = []
+print(f"Test Accuracy (Epoch 30): {test_accuracy}")
 
-for image, label in val_dataset:
-  # normalize pixel intensity values back to [0, 1]
-  image = image / 2 + 0.5
-  #convert from hsv to rgb
-  image = cv2.cvtColor(image.numpy().transpose(1,2,0), cv2.COLOR_HSV2RGB)
-  image = cv2.resize(image, (224, 224))
-  image = torch.from_numpy(image.transpose(2,0,1))
-  features = alexnet.features(image)
-  val_data.append([features, label])
+train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30, current_epoch=30)
 
-torch.save(val_data, "alex_features_val")
+test_accuracy, test_loss = evaluate(test_model_0, test_dataset, nn.MSELoss())
 
-alex_data_train = torch.load("alex_features_train")
-alex_data_val = torch.load("alex_features_val")
-
-
-class Al_Net(nn.Module):
-    def __init__(self, name):
-        super(Al_Net, self).__init__()
-        self.name = name
-        self.conv1 = nn.Conv2d(256, 512, 3)
-        self.fc1 = nn.Linear(512*4*4, 328)
-        self.fc2 = nn.Linear(328, 96)
-        self.fc3 = nn.Linear(96, 1)
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = x.view(-1, 512*4*4)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        x = x.squeeze(1)  # Flatten to [batch_size]
-        return x
-
-for i, data in enumerate(alex_data_train):
-  feature, label = data
-  alex_data_train[i] = (torch.from_numpy(feature.detach().numpy()), label)
-
-for i, data in enumerate(alex_data_val):
-  feature, label = data
-  alex_data_val[i] = (torch.from_numpy(feature.detach().numpy()), label)
-
-al_net = Al_Net("al_net")
-
-train(al_net, alex_data_train, alex_data_val, batch_size=64, num_epochs=30, lr=0.001)
-
-# train(test_model_0, val_dataset, test_dataset, batch_size=64, print_stat=True)
+print(f"Test Accuracy (Epoch 60): {test_accuracy}")
