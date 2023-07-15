@@ -13,15 +13,15 @@ class FruitRipenessDetector(nn.Module):
     def __init__(self):
          super(FruitRipenessDetector, self).__init__()
          self.name = "ripeness_detector"
-         self.conv1 = nn.Conv2d(3, 50, 3, 1, 1) # in_channels = 3 (HSV), out_channels = 7 (arbitrary but seems approprite for complex learning), kernel_size = 3x3, stride = 1, padding = 1 (to preserve resolution)
+         self.conv1 = nn.Conv2d(3, 50, 3, 1, 1) # in_channels = 3 (HSV), out_channels = 50 , kernel_size = 3x3, stride = 1, padding = 1 (to preserve resolution)
          self.pool = nn.MaxPool2d(2, 2) # max pooling for feature learning, repreated after every iteration
-         self.conv2 = nn.Conv2d(50, 100, 3, 1, 1) # in_channels = 7 (output of conv1), out_channels = 10 (again aribitrary), everything else remains the same, keep adding +50 layers
+         self.conv2 = nn.Conv2d(50, 100, 3, 1, 1) # in_channels = 50 (output of conv1), out_channels = 100, everything else remains the same, keep adding +50 layers
          self.conv3 = nn.Conv2d(100, 150, 3, 1, 1)
-         self.conv4 = nn.Conv2d(150, 200, 3, 1, 1)
+         self.conv4 = nn.Conv2d(150, 200, 3, 1, 1) 
          self.conv5 = nn.Conv2d(200, 250, 3, 1, 1)
          self.conv6 = nn.Conv2d(250, 300, 3, 1, 1)
-         self.fc1 = nn.Linear(300 * 8 * 8 , 32) # 10 output channels after conv2, 64x64 images, 32 output features (arbitrary)
-         self.fc2 = nn.Linear(32, 1)
+         self.fc1 = nn.Linear(300 * 8 * 8 , 32) # 300 * 8 * 8 output channels after conv6, reduced to 32 output features (arbitrary)
+         self.fc2 = nn.Linear(32, 1) # 32 features reduced to 1 dimension for binary classification
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
