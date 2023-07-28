@@ -52,7 +52,7 @@ e
     return path
 
 
-def evaluate(net, loader, criterion): # this function is for evaluating a model based on a given dataset and criterion
+def evaluate(net, loader, criterion, testing = False): # this function is for evaluating a model based on a given dataset and criterion
     '''
     net --> model
     loader --> type: DataLoader with specified batches
@@ -67,9 +67,13 @@ def evaluate(net, loader, criterion): # this function is for evaluating a model 
       loss = criterion(outputs, labels)
       total_loss += loss.item()
 
-      prediction = torch.round(outputs) # round predictions to 0, 1, 2, or 3
+      if testing == True:
+        corr = torch.tensor([1 if c < 1 and c > -1 else 0 for c in (outputs - labels)]).sum()
 
-      corr = torch.eq(prediction, labels).sum() # sum all the matching indeces together, obtaining a tensor containing boolean values, then summing them together
+      else:
+        prediction = torch.round(outputs) # round predictions to 0, 1, 2, or 3
+        corr = torch.eq(prediction, labels).sum() # sum all the matching indeces together, obtaining a tensor containing boolean values, then summing them together
+
       total_accuracy += int(corr) # add number of correct predictions to total accuracy
       total_iter += len(labels) # update iteration by adding batch_size (number of labels)
 
@@ -130,7 +134,8 @@ def train(model, train_dataset, val_dataset, batch_size=64, lr=0.001, num_epochs
           f"Validation accuracy: {val_accuracy[epoch] * 100:.1f}%, Validation loss: {val_loss[epoch]:.4f}"))
 
         model_path = get_model_name(model.name, batch_size, lr, n)
-        #     torch.save(model.state_dict(), model_path)
+        if (epoch+1) % 3 == 0:
+            torch.save(model.state_dict(), model_path)
 
     end_time = time.time()
     torch.save(model.state_dict(), model_path)
@@ -144,54 +149,69 @@ def train(model, train_dataset, val_dataset, batch_size=64, lr=0.001, num_epochs
     np.savetxt("{}_train_accuracy.csv".format(model_path), train_accuracy)
     np.savetxt("{}_val_accuracy.csv".format(model_path), val_accuracy)
 
+train_model = False # set to True if you want to train the model, False if you want to load a pre-trained model
 
 
-test_model_0 = FruitRipenessDetector()
+version = 'v2/'
 
-train_dataset = torch.load('train_dataset.pth')
-val_dataset = torch.load('val_dataset.pth')
-test_dataset = torch.load('test_dataset.pth')
 
+if train_model:
+
+    test_model_0 = FruitRipenessDetector()
+    train_dataset = torch.load(f'{version}train_dataset_v2.pth')
+    val_dataset = torch.load(f'{version}val_dataset_v2.pth')
+
+    train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=60)
+
+
+    # paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch30")
+    # test_model_0.load_state_dict(paramys)
+
+    # test_loss, test_accuracy = evaluate(test_model_0, test_loader, nn.MSELoss())
+    # print(f"Test Accuracy (Epoch 30): {test_accuracy*100}%")
+
+
+    # train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30, current_epoch=30)
+
+test_model_extra = FruitRipenessDetector()
+
+if train_model == False:
+    paramys = torch.load(f"{version}model_ripeness_detector_bs64_lr0.001_epoch60")
+    test_model_extra.load_state_dict(paramys)
+
+
+test_dataset = torch.load('test_dataset_extra.pth')
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=64, shuffle=True)
 
 
-
-train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30)
-
-# paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch30")
-# test_model_0.load_state_dict(paramys)
-
-test_loss, test_accuracy = evaluate(test_model_0, test_loader, nn.MSELoss())
-print(f"Test Accuracy (Epoch 30): {test_accuracy*100}%")
-
-
-
-
-train(test_model_0, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30, current_epoch=30)
-
-# paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch60")
-# test_model_0.load_state_dict(paramys)
-
-test_loss, test_accuracy = evaluate(test_model_0, test_loader, nn.MSELoss())
-print(f"Test Accuracy (Epoch 60): {test_accuracy*100}%")
-
+test_loss, test_accuracy = evaluate(test_model_extra, test_loader, nn.MSELoss(), testing=True)
+print(f"Test Accuracy: {test_accuracy*100}%")
+print(test_loss)
 
 
 # Plot graphs
-plot("model_ripeness_detector_bs64_lr0.001_epoch30", "model_ripeness_detector_bs64_lr0.001_epoch60")
+
+plot_graphs = False
+
+if plot_graphs:
+    plot("model_ripeness_detector_bs64_lr0.001_epoch60")
 
 
 
 ########## Optional Fruit Specific Testing ##########
-Banana_loader = torch.utils.data.DataLoader(torch.load('test_dataset_Banana.pth'), batch_size=64, shuffle=True)
-Mango_loader = torch.utils.data.DataLoader(torch.load('test_dataset_Mango.pth'), batch_size=64, shuffle=True)
-Tomato_loader = torch.utils.data.DataLoader(torch.load('test_dataset_Tomato.pth'), batch_size=64, shuffle=True)
 
-Banana_loss, Banana_accuracy = evaluate(test_model_0, Banana_loader, nn.MSELoss())
-Mango_loss, Mango_accuracy = evaluate(test_model_0, Mango_loader, nn.MSELoss())
-Tomato_loss, Tomato_accuracy = evaluate(test_model_0, Tomato_loader, nn.MSELoss())
+fruit_specific = False
 
-print(f"Banana Accuracy (Epoch 60): {Banana_accuracy*100}%")
-print(f"Mango Accuracy (Epoch 60): {Mango_accuracy*100}%")
-print(f"Tomato Accuracy (Epoch 60): {Tomato_accuracy*100}%")
+if fruit_specific:
+    Banana_loader = torch.utils.data.DataLoader(torch.load('test_dataset_Banana.pth'), batch_size=64, shuffle=True)
+    Mango_loader = torch.utils.data.DataLoader(torch.load('test_dataset_Mango.pth'), batch_size=64, shuffle=True)
+    Tomato_loader = torch.utils.data.DataLoader(torch.load('test_dataset_Tomato.pth'), batch_size=64, shuffle=True)
+
+    Banana_loss, Banana_accuracy = evaluate(test_model_0, Banana_loader, nn.MSELoss())
+    Mango_loss, Mango_accuracy = evaluate(test_model_0, Mango_loader, nn.MSELoss())
+    Tomato_loss, Tomato_accuracy = evaluate(test_model_0, Tomato_loader, nn.MSELoss())
+
+    print(f"Banana Accuracy (Epoch 60): {Banana_accuracy*100}%")
+    print(f"Mango Accuracy (Epoch 60): {Mango_accuracy*100}%")
+    print(f"Tomato Accuracy (Epoch 60): {Tomato_accuracy*100}%")
 
