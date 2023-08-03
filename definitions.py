@@ -68,8 +68,21 @@ def evaluate(net, loader, criterion, testing = False): # this function is for ev
       total_loss += loss.item()
 
       if testing == True:
-        corr = torch.tensor([1 if c < 1 and c > -1 else 0 for c in (outputs - labels)]).sum()
+        corr_values = []
+        for label, output in zip(labels, outputs):
+            if label == 0:
+                c_min, c_max = -0.5, 0.7
+            elif label == 1:
+                c_min, c_max = -1, 1
+            elif label == 2:
+                c_min, c_max = -0.8, 0.9
+            elif label == 3:
+                c_min, c_max = -0.9, 0.5
 
+            c = output - label
+            corr_values.append(1 if c_min < c < c_max else 0)
+
+        corr = torch.tensor(corr_values).sum()
       else:
         prediction = torch.round(outputs) # round predictions to 0, 1, 2, or 3
         corr = torch.eq(prediction, labels).sum() # sum all the matching indeces together, obtaining a tensor containing boolean values, then summing them together
