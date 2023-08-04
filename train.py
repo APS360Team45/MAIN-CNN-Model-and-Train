@@ -10,7 +10,7 @@ from plot import plot
 from definitions import FruitRipenessDetector, evaluate, train
 
 # Continue Training Model
-paramys = torch.load("model_ripeness_detector_bs64_lr0.001_epoch125")
+paramys = torch.load("full-train-and-model\\v2\model-weights\model_ripeness_detector_bs64_lr0.001_epoch150")
 model = FruitRipenessDetector()
 model.load_state_dict(paramys)
 
@@ -18,4 +18,4 @@ model.load_state_dict(paramys)
 train_dataset = torch.load('train_dataset_v2.pth')
 val_dataset = torch.load('val_dataset_v2.pth')
 
-train(model, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=25, current_epoch=125)
+train(model, train_dataset, val_dataset, batch_size=64, print_stat=True, num_epochs=30, current_epoch=150)

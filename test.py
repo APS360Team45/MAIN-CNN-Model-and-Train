@@ -17,6 +17,7 @@ MODEL_PATH_3 = 'full-train-and-model\\v2\model-weights\model_ripeness_detector_b
 MODEL_PATH_4 = 'full-train-and-model\\v2\model-weights\model_ripeness_detector_bs64_lr0.001_epoch87'
 MODEL_PATH_5 = 'full-train-and-model\\v2\model-weights\model_ripeness_detector_bs64_lr0.001_epoch100'
 MODEL_PATH_6 = 'full-train-and-model\\v2\model-weights\model_ripeness_detector_bs64_lr0.001_epoch150'
+MODEL_PATH_7 = 'full-train-and-model\\v2\model-weights\model_ripeness_detector_bs64_lr0.001_epoch180'
 COMBINED_TEST_DATASET_PATH = "combined_test_dataset.pth"
 TEST_DATASET_SADMAN_PATH = "test_dataset_extra(sadman).pth"
 TEST_DATASET_ARTIN_PATH = "test_dataset_extra(artin).pth"
@@ -49,6 +50,13 @@ if not TEST_ON_INDIVIDUAL_SETS:
     test_model.load_state_dict(paramys)
     test_loss, test_accuracy = evaluate(test_model, test_loader, nn.MSELoss(), testing=True)
     print(f"Test Accuracy V2,Epoch 150: {test_accuracy*100}%")
+
+
+
+    paramys = torch.load(MODEL_PATH_7)
+    test_model.load_state_dict(paramys)
+    test_loss, test_accuracy = evaluate(test_model, test_loader, nn.MSELoss(), testing=True)
+    print(f"Test Accuracy V2,Epoch 180: {test_accuracy*100}%")
 
 
 if TEST_ON_INDIVIDUAL_SETS:
